@@ -42,7 +42,7 @@ func (t *Task) In(tt time.Time) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return next.Year() == tt.Year() && next.Month() == tt.Month() && next.Day() == tt.Day(), nil
+	return SameDay(next, tt), nil
 }
 
 func (t *Task) Verify() error {
@@ -55,6 +55,10 @@ func (t *Task) Verify() error {
 		return errors.Join(err, ErrInvalidCronFormat)
 	}
 	return nil
+}
+
+func SameDay(t1, t2 time.Time) bool {
+	return t1.Year() == t2.Year() && t1.Month() == t2.Month() && t1.Day() == t2.Day()
 }
 
 func LoadTasks(taskFile string) ([]Task, error) {

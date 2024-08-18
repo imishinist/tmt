@@ -25,43 +25,48 @@ import (
 	"github.com/imishinist/tmt/internal"
 )
 
-// listCmd represents the list command
-var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "list the tasks",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		tasks, err := internal.LoadTasks(taskFile)
-		if err != nil {
-			if !errors.Is(err, internal.ErrFileNotFound) {
-				return err
-			}
-			tasks = []internal.Task{}
-		}
+var (
+	filterToday bool
 
-		header := []string{"ID", "Title", "Recurrence", "Description", "next"}
-		taskData := make([][]string, 0, len(tasks))
-		for i, task := range tasks {
-			next, err := task.Next(time.Now())
+	// listCmd represents the list command
+	listCmd = &cobra.Command{
+		Use:   "list",
+		Short: "list the tasks",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			tasks, err := internal.LoadTasks(taskFile)
 			if err != nil {
-				return err
+				if !errors.Is(err, internal.ErrFileNotFound) {
+					return err
+				}
+				tasks = []internal.Task{}
 			}
-			taskData = append(taskData, []string{fmt.Sprintf("#%d", i+1), task.Title, task.Recurrence, task.Description, next.Format("2006-01-02")})
-		}
-		PrintAsTable(header, taskData)
-		return nil
-	},
-}
+
+			header := []string{"ID", "Title", "Recurrence", "Description", "next"}
+			taskData := make([][]string, 0, len(tasks))
+			for i, task := range tasks {
+				in, err := task.In(time.Now())
+				if err != nil {
+					return err
+				}
+				// skip if filterToday is true and the task is not in today
+				if filterToday && !in {
+					continue
+				}
+
+				next, err := task.Next(time.Now())
+				if err != nil {
+					return err
+				}
+				taskData = append(taskData, []string{fmt.Sprintf("#%d", i+1), task.Title, task.Recurrence, task.Description, next.Format("2006-01-02")})
+			}
+			PrintAsTable(header, taskData)
+			return nil
+		},
+	}
+)
 
 func init() {
 	rootCmd.AddCommand(listCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// listCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// listCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	listCmd.Flags().BoolVar(&filterToday, "today", false, "filter today's tasks")
 }
