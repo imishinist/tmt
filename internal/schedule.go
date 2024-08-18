@@ -7,7 +7,7 @@ import (
 )
 
 func ParseRecurrence(recurrence string) (cron.Schedule, error) {
-	parser := cron.NewParser(cron.Dom | cron.Month | cron.Dow)
+	parser := cron.NewParser(cron.Dom | cron.Month | cron.Dow | cron.Descriptor)
 	schedule, err := parser.Parse(recurrence)
 	if err != nil {
 		return nil, ErrInvalidCronFormat
