@@ -10,7 +10,7 @@ func tdate(y int, m time.Month, d int) time.Time {
 	return time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
 }
 
-func TestTask_In(t *testing.T) {
+func TestTask_Match(t *testing.T) {
 	cases := []struct {
 		name string
 		task Task
@@ -18,7 +18,7 @@ func TestTask_In(t *testing.T) {
 		want bool
 	}{
 		{
-			name: "same day @daily",
+			name: "match @daily",
 			task: Task{
 				Recurrence: "* * *",
 			},
@@ -26,7 +26,7 @@ func TestTask_In(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "not same day @weekly (every Monday)",
+			name: "not match @weekly (every Monday)",
 			task: Task{
 				Recurrence: fmt.Sprintf("* * %d", time.Monday),
 			},
@@ -34,7 +34,7 @@ func TestTask_In(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "same day @weekly (every Monday)",
+			name: "match @weekly (every Monday)",
 			task: Task{
 				Recurrence: fmt.Sprintf("* * %d", time.Monday),
 			},
@@ -42,7 +42,7 @@ func TestTask_In(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "same day @monthly (every 1th)",
+			name: "match @monthly (every 1th)",
 			task: Task{
 				Recurrence: "1 * *",
 			},
@@ -50,7 +50,7 @@ func TestTask_In(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "not same day @monthly (every 1th)",
+			name: "not match @monthly (every 1th)",
 			task: Task{
 				Recurrence: "1 * *",
 			},
@@ -58,7 +58,7 @@ func TestTask_In(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "same day every 6 month",
+			name: "match every 6 month",
 			task: Task{
 				Recurrence: "1 1,7 *",
 			},
@@ -66,7 +66,7 @@ func TestTask_In(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "not same day every 6 month",
+			name: "not match every 6 month",
 			task: Task{
 				Recurrence: "1 1,7 *",
 			},
@@ -76,7 +76,7 @@ func TestTask_In(t *testing.T) {
 	}
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.task.In(tt.day)
+			got, err := tt.task.Match(tt.day)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}

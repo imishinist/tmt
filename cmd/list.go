@@ -44,12 +44,12 @@ var (
 			header := []string{"ID", "Title", "Recurrence", "Description", "next"}
 			taskData := make([][]string, 0, len(tasks))
 			for i, task := range tasks {
-				in, err := task.In(time.Now())
+				matched, err := task.Match(time.Now())
 				if err != nil {
 					return err
 				}
-				// skip if filterToday is true and the task is not in today
-				if filterToday && !in {
+				// skip if filterToday is true and the task is not matched today
+				if filterToday && !matched {
 					continue
 				}
 

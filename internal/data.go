@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"os"
 	"time"
-
-	"github.com/robfig/cron/v3"
 )
 
 var (
@@ -28,37 +26,36 @@ type Task struct {
 
 // Next returns the next time of the task
 func (t *Task) Next(tt time.Time) (time.Time, error) {
-	parser := cron.NewParser(cron.Dom | cron.Month | cron.Dow)
-	schedule, err := parser.Parse(t.Recurrence)
+	schedule, err := ParseRecurrence(t.Recurrence)
 	if err != nil {
-		return time.Time{}, ErrInvalidCronFormat
+		return time.Time{}, err
 	}
 	return schedule.Next(tt), nil
 }
 
-// In returns true if the task is in the given time (only check the day)
-func (t *Task) In(tt time.Time) (bool, error) {
-	next, err := t.Next(tt.Add(-time.Hour * 24))
+// Match returns true if the task is in the given time (only check the day)
+func (t *Task) Match(tt time.Time) (bool, error) {
+	schedule, err := ParseRecurrence(t.Recurrence)
 	if err != nil {
 		return false, err
 	}
-	return SameDay(next, tt), nil
+	return Match(schedule, tt), nil
 }
 
+// Verify returns an error if the task is invalid
 func (t *Task) Verify() error {
 	if t.Title == "" {
 		return errors.New("title is required")
 	}
-	schedule := cron.NewParser(cron.Dom | cron.Month | cron.Dow)
-	_, err := schedule.Parse(t.Recurrence)
+	if t.Recurrence == "" {
+		return errors.New("recurrence is required")
+	}
+
+	_, err := ParseRecurrence(t.Recurrence)
 	if err != nil {
-		return errors.Join(err, ErrInvalidCronFormat)
+		return err
 	}
 	return nil
-}
-
-func SameDay(t1, t2 time.Time) bool {
-	return t1.Year() == t2.Year() && t1.Month() == t2.Month() && t1.Day() == t2.Day()
 }
 
 func LoadTasks(taskFile string) ([]Task, error) {
