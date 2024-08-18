@@ -17,8 +17,22 @@ package cmd
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
+)
+
+func getEnv(key, defaultValue string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+	return value
+}
+
+var (
+	dataDir  = filepath.Join(getEnv("XDG_DATA_HOME", filepath.Join(os.Getenv("HOME"), "/.local/share")), "tmt")
+	taskFile = filepath.Join(dataDir, "tasks.json")
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -34,4 +48,6 @@ func Execute() {
 	if err != nil {
 		os.Exit(1)
 	}
+
+	rootCmd.PersistentFlags().StringVarP(&taskFile, "task-file", "f", taskFile, "task file")
 }
