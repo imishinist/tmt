@@ -33,6 +33,10 @@ var (
 		Use:   "list",
 		Short: "list the tasks",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := internal.InitTaskFile(taskFile); err != nil {
+				return err
+			}
+
 			tasks, err := internal.LoadTasks(taskFile)
 			if err != nil {
 				if !errors.Is(err, internal.ErrFileNotFound) {

@@ -35,6 +35,9 @@ var (
 		Use:   "add",
 		Short: "add the task",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := internal.InitTaskFile(taskFile); err != nil {
+				return err
+			}
 			if err := addingTask.Verify(); err != nil {
 				return err
 			}

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -55,6 +56,21 @@ func (t *Task) Verify() error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func InitTaskFile(taskFile string) error {
+	_, err := os.Stat(taskFile)
+	if err == nil {
+		return nil
+	}
+
+	if os.IsNotExist(err) {
+		if err := os.MkdirAll(filepath.Dir(taskFile), 0755); err != nil {
+			return fmt.Errorf("failed to create directory: %w", err)
+		}
+	}
+
 	return nil
 }
 
